@@ -1,0 +1,758 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Femboy Fame Clicker</title>
+<style>
+  :root{
+    --bg:#0f1724;
+    --card:hsl(219, 24%, 81%);
+    --accent:#ff8bd8;
+    --muted:#9aa4b2;
+    --glass: rgba(255,255,255,0.03);
+    --glass-2: rgba(255,255,255,0.02);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+ *{box-sizing:border-box}
+
+/* Make all text white */
+* {
+  color: white !important;
+}
+html,body{height:100%}
+  body{
+    background:linear-gradient(180deg,#081021 0%,#07111a 100%);
+    color:#e6eef6;
+    margin:0;
+    padding:20px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    gap:20px;
+  }
+  .container{
+    width:100%;
+    max-width:1100px;
+    display:grid;
+    grid-template-columns:420px 1fr;
+    gap:20px;
+    align-items:start;
+  }
+  .card{
+    background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 6px 24px rgba(114, 50, 109, 0.6);
+    border:1px solid rgba(255,255,255,0.04);
+  }
+  .main-card{display:flex;flex-direction:column;gap:12px}
+  .stat-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .title{font-size:18px;font-weight:700;display:flex;gap:8px;align-items:center}
+  .subtitle{color:var(--muted);font-size:12px}
+  .big-counter{font-size:28px;font-weight:800;letter-spacing:.5px}
+  #click-btn{
+    background:linear-gradient(180deg,#ffffff08,#ffffff04);
+    border-radius:14px;
+    padding:18px;
+    display:flex;
+    gap:14px;
+    align-items:center;
+    justify-content:center;
+    border:1px solid rgba(255, 255, 255, 0.04);
+    cursor:pointer;
+    user-select:none;
+    transition:transform .08s ease,box-shadow .08s;
+  }
+  #click-btn:active{transform:scale(.98)}
+  .click-emoji{font-size:48px;filter:drop-shadow(0 6px 10px rgba(255, 255, 255, 0.6))}
+  .click-info{text-align:center}
+  .btn-small{
+    background:linear-gradient(180deg,rgba(117, 99, 99, 0.6),rgba(85, 66, 66, 0.6));
+    padding:8px 10px;
+    border-radius:10px;
+    font-weight:700;
+    font-size:13px;
+    border:1px solid rgba(159, 32, 209, 0.03);
+    cursor:pointer;
+  }
+  .shop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .upgrade{
+    background:var(--glass);
+    padding:10px;
+    border-radius:12px;
+    border:1px solid rgba(159, 32, 209, 0.03);
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+  .upgrade .emoji{font-size:28px;width:44px;text-align:center}
+  .upgrade .info{flex:1}
+  .upgrade .name{font-weight:700;font-size:14px}
+  .upgrade .cost{font-weight:800;color:var(--accent);font-size:13px}
+  .upgrade .count{font-size:12px;color:var(--muted)}
+  .achievements{display:flex;gap:8px;flex-wrap:wrap}
+  .ach{background:var(--glass-2);padding:6px 10px;border-radius:999px;font-size:13px;color:var(--muted)}
+  @media (max-width:980px){.container{grid-template-columns:1fr}}
+  .hint{font-size:12px;color:var(--muted)}
+  .float-plus{
+    position:absolute;
+    pointer-events:none;
+    font-weight:800;
+    color:var(--accent);
+    animation:floatUp 800ms ease-out forwards;
+  }
+  @keyframes floatUp{
+    0%{transform:translateY(0);opacity:1}
+    100%{transform:translateY(-80px);opacity:0}
+  }
+
+  /* tabs */
+  .tabs { display:flex; gap:8px; margin-bottom:12px; }
+  .tab-btn {
+    padding:8px 12px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:700;
+    background:transparent;
+    border:1px solid rgba(255,255,255,0.03);
+  }
+  .tab-btn.active {
+    background:linear-gradient(90deg,var(--accent),#c77bd6);
+    color:#081016;
+    box-shadow:0 6px 18px rgba(102, 92, 92, 0.5);
+  }
+
+  /* image icons for shop items */
+  .item-icon{
+    width:44px;
+    height:44px;
+    object-fit:cover;
+    border-radius:10px;
+    box-shadow:0 2px 6px rgba(0, 0, 0, 0.486);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="card main-card">
+    <div class="stat-row">
+      <div>
+        <div class="title">Femboy Clicker <small class="subtitle">— slay, click, collect ✨</small></div>
+        <div id="totalCharm" class="big-counter">0</div>
+        <div class="hint">Charm (your main resource) · <span id="cpsText">0</span> charm/sec</div>
+      </div>
+      <div style="text-align:right">
+        <div class="subtitle">Prestige</div>
+        <div id="prestigeCount" style="font-weight:800;font-size:18px">0 ⭑</div>
+      </div>
+    </div>
+
+    <!-- main click image -->
+    <div id="click-btn">
+      <img src="main femboy.jpg" alt="Main Image" style="width:120px;height:120px;object-fit:cover;border-radius:16px;box-shadow:0 6px 20px rgba(0,0,0,0.6);">
+      <div class="click-info">
+        <div style="font-weight:800;">Pose for the likes!</div>
+        <div class="subtitle">Click to earn charm — or hold for autoclick upgrades</div>
+        <div class="hint" style="margin-top:6px">Charm / click: <strong id="cpcDisplay">1</strong></div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="controls">
+        <button id="saveBtn" class="btn-small">Save</button>
+        <button id="exportBtn" class="btn-small">Export</button>
+        <button id="importBtn" class="btn-small">Import</button>
+      </div>
+      <div style="text-align:right">
+        <div class="hint">Total Clicks: <span id="clickCount">0</span></div>
+        <div class="hint">Session Time: <span id="sessionTime">0s</span></div>
+      </div>
+    </div>
+
+    <div style="margin-top:6px">
+      <div style="font-weight:700; margin-bottom:6px">Achievements</div>
+      <div id="achRow" class="achievements"></div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-weight:700">Prestige (Rebirth)</div>
+        <div style="font-size:12px;color:var(--muted)">Reset for permanent prestige points</div>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+        <div style="flex:1" class="hint">Prestige threshold: <strong id="prestigeThreshold">1,000,000</strong> charm</div>
+        <button id="prestigeBtn" class="btn-small">Prestige</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Shop & upgrades -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div class="title">Shop</div>
+        <div class="subtitle">Buy upgrades to automate charm gains</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:700;font-size:16px">Charm: <span id="miniCharm">0</span></div>
+        <small class="hint">Click power x <span id="prestigeMult">1.00</span> from prestige</small>
+      </div>
+    </div>
+
+    <hr style="opacity:.06;border:none;height:1px;margin:12px 0;background:linear-gradient(90deg,transparent,#ffffff10,transparent)">
+
+    <!-- Tabs for shop pages -->
+    <div class="tabs">
+      <button id="tabPassive" class="tab-btn active">Shop Page 1</button>
+      <button id="tabClickers" class="tab-btn">Shop Page 2 (Click Power)</button>
+    </div>
+
+    <!-- shared shop container -->
+    <div id="shop" class="shop-grid"></div>
+
+    <hr style="opacity:.06;border:none;height:1px;margin:12px 0;background:linear-gradient(90deg,transparent,#ffffff10,transparent)">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div>
+        <div style="font-weight:700">Upgrades</div>
+        <div class="hint">Unlock special boosts as you progress</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="buyAllBtn" class="btn-small">Buy 1</button>
+        <button id="buy10Btn" class="btn-small">Buy 10</button>
+        <button id="buyMaxBtn" class="btn-small">Buy Max</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <div style="font-weight:700">Debug & Save</div>
+      <div class="hint" style="margin-top:6px">
+        <button id="resetBtn" class="btn-small">Reset Game</button>
+        <button id="softResetBtn" class="btn-small">Soft Reset (keep prestige)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating + effect container -->
+<div id="floatArea" style="position:fixed;left:0;top:0;pointer-events:none;width:100%;height:100%;"></div>
+
+<script>
+/*
+  Femboy Fame Clicker
+  - Single-file browser clicker with 2 shop pages:
+    Page 1 = passive CPS items (existing)
+    Page 2 = click-power upgrades (increases charmPerClick)
+*/
+
+/* ---------- Game data & defaults ---------- */
+const DEFAULTS = {
+  totalCharm: 0,
+  charmPerClick: 1,
+  cps: 0,
+  clickCount: 0,
+  prestige: 0,
+  prestigeMultiplier: 1.0, // applied to charm gains
+  items: [], // passive items
+  clickUpgrades: [], // click-power upgrades counts
+  achievements: {},
+  lastSave: Date.now()
+};
+
+const GAME_KEY = 'femboy_clicker_v1';
+
+/* define passive shop items (unchanged) */
+const ITEM_DEFINITIONS = [
+ {id:'lipgloss',name:'Shy femboy',emoji:'<img src="shy femboy.jpg" class="item-icon" alt="lipgloss Icon">',baseCost:50,baseCps:1,desc:'A glossy pout attracts fans.'},
+  {id:'crop',name:'Furry femboy',emoji:'<img src="furry femboy.jpg" class="item-icon" alt="Crop Top Icon">',baseCost:500,baseCps:5,desc:'Strike a pose, gain charm.'},
+  {id:'skirt',name:'Felix',emoji:'<img src="felix.jpg" class="item-icon" alt="skirt Icon">',baseCost:2500,baseCps:20,desc:'Outfit that fantasies are made of.'},
+  {id:'ringlight',name:'Ring Light',emoji:'<img src="ring light femboy.jpg" class="item-icon" alt="ringlight Icon">',baseCost:10000,baseCps:100,desc:'Selfie glow = more fans.'},
+  { id:'onlyslays', name:'OnlySlays Premium', emoji:'<img src="cute manager.gif" class="item-icon" alt="onlyslays', baseCost:100000, baseCps:1000, desc:'Sponsored content machine.' },
+ { id:'manager', name:'Cute Manager', emoji:'<img src="yes.webp" class="item-icon" alt="manager"', baseCost:1_000_000, baseCps:12000, desc:'Automates your social life.' }
+];
+
+/* define click-power upgrades (Option A: small increments) */
+const CLICK_UPGRADE_DEFS = [
+  {id:'click1', name:'+1 Click Power', emoji:'👆', baseCost:200, addClick:1, desc:'Tiny boost to your click power.'},
+  {id:'click5', name:'+5 Click Power', emoji:'✨', baseCost:2000, addClick:5, desc:'Stronger taps bring more charm.'},
+  {id:'click10', name:'+10 Click Power', emoji:'💫', baseCost:10000, addClick:10, desc:'Rapid, efficient clicking.'}
+];
+
+const PRICE_SCALE = 1.15;
+
+/* Achievements thresholds */
+const ACHIEVEMENTS = [
+  {id:'firstClick', name:'First Pose', desc:'Click once', check: s => s.clickCount >= 1},
+  {id:'100Clicks', name:'Casual Scroller', desc:'100 clicks', check: s => s.clickCount >= 100},
+  {id:'100kCharm', name:'Rising Star', desc:'Gain 100,000 charm', check: s => s.totalCharm >= 100000},
+  {id:'1MCharm', name:'Icon', desc:'Gain 1,000,000 charm', check: s => s.totalCharm >= 1_000_000},
+];
+
+/* Prestige threshold = how much totalCharm required to get 1 prestige point */
+const PRESTIGE_BASE_THRESHOLD = 1_000_000;
+
+/* ---------- Game state ---------- */
+let state = JSON.parse(JSON.stringify(DEFAULTS));
+state.items = ITEM_DEFINITIONS.map(it => ({...it, count:0}));
+state.clickUpgrades = CLICK_UPGRADE_DEFS.map(u => ({...u, count:0}));
+
+/* which shop tab is active: 'passive' or 'clickers' */
+let activeShopTab = 'passive';
+
+/* ---------- Helpers ---------- */
+function formatNumber(n){
+  if (typeof n !== 'number' || !isFinite(n)) return '0';
+  if (n < 1000) return ''+Math.floor(n);
+  const units = ['K','M','B','T','Qa','Qi','Sx','Sp','Oc','No'];
+  let v = n;
+  let i = -1;
+  while(v >= 1000 && i < units.length - 1){
+    v /= 1000;
+    i++;
+  }
+  return `${v.toFixed(v < 10 ? 2 : 1)}${i >= 0 ? units[i] : ''}`;
+}
+
+function costFor(item){
+  return Math.floor(item.baseCost * Math.pow(PRICE_SCALE, item.count));
+}
+
+function recalcCPS(){
+  let cps = 0;
+  for (const it of state.items) cps += it.baseCps * it.count;
+  state.cps = cps * state.prestigeMultiplier;
+  document.getElementById('cpsText').innerText = formatNumber(state.cps);
+  document.getElementById('miniCharm').innerText = formatNumber(state.totalCharm);
+  document.getElementById('prestigeMult').innerText = state.prestigeMultiplier.toFixed(2);
+  document.getElementById('cpcDisplay').innerText = state.charmPerClick;
+}
+
+/* ---------- UI rendering ---------- */
+function renderPassiveShop(){
+  const shop = document.getElementById('shop');
+  shop.innerHTML = '';
+  for (const item of state.items){
+    const div = document.createElement('div');
+    div.className = 'upgrade tooltip';
+    div.setAttribute('data-tip', `${item.desc}`);
+    div.innerHTML = `
+      <div class="emoji">${item.emoji}</div>
+      <div class="info">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="name">${item.name}</div>
+          <div class="cost">${formatNumber(costFor(item))}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+          <div class="subtitle">+${formatNumber(item.baseCps)} cps</div>
+          <div class="count">${item.count} owned</div>
+        </div>
+      </div>
+    `;
+    div.onclick = () => buyPassiveItem(item, 1);
+    shop.appendChild(div);
+  }
+}
+
+function renderClickerShop(){
+  const shop = document.getElementById('shop');
+  shop.innerHTML = '';
+  for (const u of state.clickUpgrades){
+    const div = document.createElement('div');
+    div.className = 'upgrade tooltip';
+    div.setAttribute('data-tip', `${u.desc}`);
+    div.innerHTML = `
+      <div class="emoji" style="font-size:26px">${u.emoji}</div>
+      <div class="info">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="name">${u.name}</div>
+          <div class="cost">${formatNumber(costFor(u))}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+          <div class="subtitle">+${u.addClick} charm / click</div>
+          <div class="count">${u.count} owned</div>
+        </div>
+      </div>
+    `;
+    div.onclick = () => buyClickUpgrade(u, 1);
+    shop.appendChild(div);
+  }
+}
+
+function renderShop(){
+  // highlight active tab
+  document.getElementById('tabPassive').classList.toggle('active', activeShopTab === 'passive');
+  document.getElementById('tabClickers').classList.toggle('active', activeShopTab === 'clickers');
+
+  if (activeShopTab === 'passive') renderPassiveShop();
+  else renderClickerShop();
+}
+
+/* achievements rendering */
+function renderAchievements(){
+  const holder = document.getElementById('achRow');
+  holder.innerHTML = '';
+  for (const a of ACHIEVEMENTS){
+    const earned = !!state.achievements[a.id];
+    const el = document.createElement('div');
+    el.className = 'ach';
+    el.style.opacity = earned ? '1' : '0.35';
+    el.innerText = `${earned ? '🏅 ' : ''}${a.name}`;
+    holder.appendChild(el);
+  }
+}
+
+/* update counters */
+function renderCounters(){
+  document.getElementById('totalCharm').innerText = formatNumber(state.totalCharm);
+  document.getElementById('miniCharm').innerText = formatNumber(state.totalCharm);
+  document.getElementById('clickCount').innerText = formatNumber(state.clickCount);
+  document.getElementById('prestigeCount').innerText = `${state.prestige} ⭑`;
+  document.getElementById('prestigeThreshold').innerText = formatNumber(PRESTIGE_BASE_THRESHOLD);
+  document.getElementById('prestigeMult').innerText = state.prestigeMultiplier.toFixed(2);
+  document.getElementById('cpcDisplay').innerText = state.charmPerClick;
+}
+
+/* ---------- Game actions ---------- */
+function addCharm(amount, x=window.innerWidth/2, y=window.innerHeight/2){
+  state.totalCharm += amount;
+  const el = document.createElement('div');
+  el.className = 'float-plus';
+  el.style.left = (x - 20) + 'px';
+  el.style.top = (y - 10) + 'px';
+  el.innerText = `+${formatNumber(amount)}`;
+  document.getElementById('floatArea').appendChild(el);
+  setTimeout(()=>el.remove(), 900);
+  recalcCPS();
+  renderCounters();
+  checkAchievements();
+}
+
+/* passive purchases */
+function buyPassiveItem(item, quantity=1){
+  for (let i=0;i<quantity;i++){
+    const cost = costFor(item);
+    if (state.totalCharm >= cost){
+      state.totalCharm -= cost;
+      item.count++;
+    } else break;
+  }
+  recalcCPS();
+  renderShop();
+  renderCounters();
+  saveGame();
+}
+
+/* click upgrade purchases */
+function buyClickUpgrade(upgrade, quantity=1){
+  for (let i=0;i<quantity;i++){
+    const cost = costFor(upgrade);
+    if (state.totalCharm >= cost){
+      state.totalCharm -= cost;
+      upgrade.count++;
+      state.charmPerClick += upgrade.addClick;
+    } else break;
+  }
+  recalcCPS();
+  renderShop();
+  renderCounters();
+  saveGame();
+}
+
+/* buyMax variants */
+function buyMaxPassive(item){
+  while(state.totalCharm >= costFor(item)){
+    state.totalCharm -= costFor(item);
+    item.count++;
+  }
+}
+function buyMaxClick(upgrade){
+  while(state.totalCharm >= costFor(upgrade)){
+    state.totalCharm -= costFor(upgrade);
+    upgrade.count++;
+    state.charmPerClick += upgrade.addClick;
+  }
+}
+
+function buyMaxAll(){
+  if (activeShopTab === 'passive'){
+    for (const it of state.items) buyMaxPassive(it);
+  } else {
+    for (const u of state.clickUpgrades) buyMaxClick(u);
+  }
+  recalcCPS();
+  renderShop();
+  renderCounters();
+  saveGame();
+}
+
+/* buy multiple helper (Buy 10) */
+function buyMultipleSelected(n){
+  if (activeShopTab === 'passive'){
+    for (const it of state.items){
+      for (let i=0;i<n;i++){
+        if (state.totalCharm >= costFor(it)){ state.totalCharm -= costFor(it); it.count++; }
+        else break;
+      }
+    }
+  } else {
+    for (const u of state.clickUpgrades){
+      for (let i=0;i<n;i++){
+        if (state.totalCharm >= costFor(u)){ state.totalCharm -= costFor(u); u.count++; state.charmPerClick += u.addClick; }
+        else break;
+      }
+    }
+  }
+  recalcCPS();
+  renderShop();
+  renderCounters();
+  saveGame();
+}
+
+/* prestige */
+function canPrestige(){
+  return state.totalCharm >= PRESTIGE_BASE_THRESHOLD;
+}
+function prestige(){
+  if (!canPrestige()) return alert('Not enough charm to prestige.');
+  const gained = Math.floor(state.totalCharm / PRESTIGE_BASE_THRESHOLD);
+  state.prestige += gained;
+  state.prestigeMultiplier = 1 + state.prestige * 0.05;
+  // soft reset but keep prestige
+  state.totalCharm = 0;
+  state.clickCount = 0;
+  for (const it of state.items) it.count = 0;
+  // reset click upgrades but keep added charmPerClick? We'll reset charmPerClick to base 1 and reapply saved upgrades — here we choose to reset click upgrades counts to 0 and charmPerClick to base 1.
+  for (const u of state.clickUpgrades) u.count = 0;
+  state.charmPerClick = 1;
+  state.achievements = {};
+  recalcCPS();
+  renderShop();
+  renderAchievements();
+  renderCounters();
+  saveGame();
+  alert(`Prestiged! You gained ${gained} prestige point(s). Prestige multiplier is now x${state.prestigeMultiplier.toFixed(2)}.`);
+}
+
+/* achievements check */
+function checkAchievements(){
+  for (const a of ACHIEVEMENTS){
+    if (!state.achievements[a.id] && a.check(state)){
+      state.achievements[a.id] = Date.now();
+      const el = document.createElement('div');
+      el.className = 'float-plus';
+      el.style.left = '50%';
+      el.style.top = '10%';
+      el.style.transform = 'translateX(-50%)';
+      el.innerText = `🏆 ${a.name}`;
+      document.getElementById('floatArea').appendChild(el);
+      setTimeout(()=>el.remove(),1200);
+    }
+  }
+  renderAchievements();
+}
+
+/* ---------- Save / Load ---------- */
+function saveGame(){
+  state.lastSave = Date.now();
+  localStorage.setItem(GAME_KEY, JSON.stringify(state));
+}
+function loadGame(){
+  const raw = localStorage.getItem(GAME_KEY);
+  if (!raw) return;
+  try{
+    const loaded = JSON.parse(raw);
+    // load scalar values
+    state.totalCharm = loaded.totalCharm ?? state.totalCharm;
+    state.charmPerClick = loaded.charmPerClick ?? state.charmPerClick;
+    state.clickCount = loaded.clickCount ?? state.clickCount;
+    state.prestige = loaded.prestige ?? state.prestige;
+    state.prestigeMultiplier = loaded.prestigeMultiplier ?? state.prestigeMultiplier;
+    state.achievements = loaded.achievements ?? state.achievements;
+    // passive items: map counts by id
+    if (loaded.items && Array.isArray(loaded.items)){
+      for (const it of state.items){
+        const found = loaded.items.find(x=>x.id === it.id);
+        it.count = found ? (found.count || 0) : 0;
+      }
+    }
+    // click upgrades: map counts by id and recalc charmPerClick
+    if (loaded.clickUpgrades && Array.isArray(loaded.clickUpgrades)){
+      // reset charmPerClick to base before reapplying
+      state.charmPerClick = loaded.charmPerClick ?? state.charmPerClick ?? 1;
+      for (const u of state.clickUpgrades){
+        const found = loaded.clickUpgrades.find(x=>x.id === u.id);
+        u.count = found ? (found.count || 0) : 0;
+        // if loaded doesn't provide charmPerClick directly, rebuild from counts
+      }
+      // if loaded didn't specify charmPerClick, rebuild from counts
+      if (typeof loaded.charmPerClick === 'undefined'){
+        state.charmPerClick = 1;
+        for (const u of state.clickUpgrades){
+          state.charmPerClick += u.count * u.addClick;
+        }
+      }
+    }
+    recalcCPS();
+    renderShop();
+    renderAchievements();
+    renderCounters();
+  }catch(e){
+    console.error('Failed to load save', e);
+  }
+}
+
+/* export/import JSON */
+function exportSave(){
+  const dataStr = JSON.stringify(state);
+  const blob = new Blob([dataStr], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'femboy-clicker-save.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+function importSave(text){
+  try{
+    const parsed = JSON.parse(text);
+    localStorage.setItem(GAME_KEY, JSON.stringify(parsed));
+    loadGame();
+    alert('Imported save!');
+  }catch(e){
+    alert('Invalid save data.');
+  }
+}
+
+/* reset functions */
+function resetGame(){
+  if (!confirm('Reset everything? This will erase your save.')) return;
+  localStorage.removeItem(GAME_KEY);
+  state = JSON.parse(JSON.stringify(DEFAULTS));
+  state.items = ITEM_DEFINITIONS.map(it => ({...it, count:0}));
+  state.clickUpgrades = CLICK_UPGRADE_DEFS.map(u => ({...u, count:0}));
+  state.prestigeMultiplier = 1.0;
+  recalcCPS();
+  renderShop();
+  renderAchievements();
+  renderCounters();
+  saveGame();
+}
+function softReset(){
+  if (!confirm('Soft reset: clears progress but keeps prestige points.')) return;
+  const keptPrestige = state.prestige;
+  state = JSON.parse(JSON.stringify(DEFAULTS));
+  state.items = ITEM_DEFINITIONS.map(it => ({...it, count:0}));
+  state.clickUpgrades = CLICK_UPGRADE_DEFS.map(u => ({...u, count:0}));
+  state.prestige = keptPrestige;
+  state.prestigeMultiplier = 1 + state.prestige * 0.05;
+  recalcCPS();
+  renderShop();
+  renderAchievements();
+  renderCounters();
+  saveGame();
+}
+
+/* ---------- Intervals & events ---------- */
+let tickTimer = null;
+function startTick(){
+  if (tickTimer) clearInterval(tickTimer);
+  tickTimer = setInterval(()=>{
+    if (state.cps > 0){
+      addCharm(state.cps);
+    }
+    const now = Date.now();
+    if (now - state.lastSave > 5000){
+      saveGame();
+    }
+  }, 1000);
+}
+
+/* handle click button */
+const clickBtn = document.getElementById('click-btn');
+clickBtn.addEventListener('click', (ev) => {
+  const power = (state.charmPerClick || 1) * state.prestigeMultiplier;
+  const gain = Math.max(1, Math.floor(power));
+  state.clickCount++;
+  addCharm(gain, ev.clientX, ev.clientY);
+  checkAchievements();
+});
+
+/* keyboard accessibility: space triggers click */
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT' ) {
+    e.preventDefault();
+    clickBtn.click();
+  }
+});
+
+/* UI: tab switching */
+document.getElementById('tabPassive').addEventListener('click', () => {
+  activeShopTab = 'passive';
+  renderShop();
+});
+document.getElementById('tabClickers').addEventListener('click', () => {
+  activeShopTab = 'clickers';
+  renderShop();
+});
+
+/* UI buttons */
+document.getElementById('saveBtn').onclick = () => { saveGame(); alert('Saved!'); };
+document.getElementById('exportBtn').onclick = exportSave;
+document.getElementById('importBtn').onclick = () => {
+  const text = prompt('Paste save JSON here:');
+  if (text) importSave(text);
+};
+document.getElementById('prestigeBtn').onclick = () => prestige();
+document.getElementById('resetBtn').onclick = resetGame;
+document.getElementById('softResetBtn').onclick = softReset;
+
+/* shop purchase buttons (Buy 1, Buy 10, Buy Max) */
+document.getElementById('buyAllBtn').onclick = () => {
+  // buy 1 of first affordable item in current tab
+  if (activeShopTab === 'passive'){
+    for (const it of state.items){
+      if (state.totalCharm >= costFor(it)) { buyPassiveItem(it, 1); return; }
+    }
+  } else {
+    for (const u of state.clickUpgrades){
+      if (state.totalCharm >= costFor(u)) { buyClickUpgrade(u, 1); return; }
+    }
+  }
+  alert('Nothing affordable yet!');
+};
+document.getElementById('buy10Btn').onclick = () => {
+  // buy 10 of everything possible in current tab (simple heuristic)
+  buyMultipleSelected(10);
+};
+document.getElementById('buyMaxBtn').onclick = () => {
+  buyMaxAll();
+};
+
+/* session timer */
+let sessionStart = Date.now();
+setInterval(()=>{
+  const s = Math.floor((Date.now() - sessionStart)/1000);
+  document.getElementById('sessionTime').innerText = `${s}s`;
+},1000);
+
+/* ---------- Init ---------- */
+function init(){
+  if (!state.items || state.items.length === 0) state.items = ITEM_DEFINITIONS.map(it => ({...it, count:0}));
+  if (!state.clickUpgrades || state.clickUpgrades.length === 0) state.clickUpgrades = CLICK_UPGRADE_DEFS.map(u => ({...u, count:0}));
+  renderShop();
+  renderAchievements();
+  recalcCPS();
+  renderCounters();
+  loadGame();
+  startTick();
+}
+init();
+
+/* Save on unload */
+window.addEventListener('beforeunload', saveGame);
+</script>
+</body>
+</html>
