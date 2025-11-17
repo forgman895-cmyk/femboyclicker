@@ -1,1 +1,2 @@
-Documentation can be found in docs/
+# Femboy Clicker
+Documentation can be found in documentation/
